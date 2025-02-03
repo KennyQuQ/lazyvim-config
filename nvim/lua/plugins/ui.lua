@@ -1,0 +1,268 @@
+-- This file contains the configuration for various UI-related plugins in Neovim.
+vim.api.nvim_set_hl(0, "SnacksDashboardHeader", { fg = "#c34043", bold = true }) -- color kanagawa dragon red
+
+return {
+  -- Plugin: folke/todo-comments.nvim
+  -- URL: https://github.com/folke/todo-comments.nvim
+  -- Description: Plugin para resaltar y buscar comentarios TODO, FIX, HACK, etc. en tu código.
+  -- IMPORTANT: using version "*" to fix a bug
+  { "folke/todo-comments.nvim", version = "*" },
+  -- Plugin: folke/which-key.nvim
+  -- URL: https://github.com/folke/which-key.nvim
+  -- Description: Plugin para mostrar un popup con los keybindings disponibles.
+  -- IMPORTANT: using event "VeryLazy" to optimize loading time
+  {
+    "folke/which-key.nvim",
+    event = "VeryLazy",
+    opts = {
+      preset = "classic",
+      win = { border = "single" },
+    },
+  },
+  -- Plugin: noice.nvim
+  -- URL: https://github.com/folke/noice.nvim
+  -- Description: A Neovim plugin for enhancing the command-line UI.
+  {
+    "folke/noice.nvim",
+    config = function()
+      require("noice").setup({
+        cmdline = {
+          view = "cmdline", -- Use the cmdline view for the command-line
+        },
+        presets = {
+          bottom_search = true, -- Enable bottom search view
+          command_palette = true, -- Enable command palette view
+          lsp_doc_border = true, -- Enable LSP documentation border
+        },
+        -- Uncomment the following lines to customize the cmdline popup view
+        -- views = {
+        --   cmdline_popup = {
+        --     filter_options = {},
+        --     win_options = {
+        --       winhighlight = "NormalFloat:NormalFloat,FloatBorder:FloatBorder",
+        --     },
+        --   },
+        -- },
+      })
+    end,
+  },
+
+  -- Plugin: nvim-docs-view
+  -- URL: https://github.com/amrbashir/nvim-docs-view
+  -- Description: A Neovim plugin for viewing documentation.
+  {
+    "amrbashir/nvim-docs-view",
+    lazy = true, -- Load this plugin lazily
+    cmd = "DocsViewToggle", -- Command to toggle the documentation view
+    opts = {
+      position = "right", -- Position the documentation view on the right
+      width = 60, -- Set the width of the documentation view
+    },
+  },
+
+  -- Plugin: lualine.nvim
+  -- URL: https://github.com/nvim-lualine/lualine.nvim
+  -- Description: A blazing fast and easy to configure Neovim statusline plugin.
+  {
+    "nvim-lualine/lualine.nvim",
+    event = "VeryLazy", -- Load this plugin on the 'VeryLazy' event
+    requires = { "nvim-tree/nvim-web-devicons", opt = true }, -- Optional dependency for icons
+    opts = {
+      options = {
+        theme = "tokyonight", -- Set the theme for lualine
+        icons_enabled = true, -- Enable icons in the statusline
+      },
+      sections = {
+        lualine_a = {
+          {
+            "mode", -- Display the current mode
+            icon = "󱗞", -- Set the icon for the mode
+          },
+        },
+      },
+    },
+  },
+
+  -- Plugin: incline.nvim
+  -- URL: https://github.com/b0o/incline.nvim
+  -- Description: A Neovim plugin for showing the current filename in a floating window.
+  {
+    "b0o/incline.nvim",
+    event = "BufReadPre", -- Load this plugin before reading a buffer
+    priority = 1200, -- Set the priority for loading this plugin
+    config = function()
+      require("incline").setup({
+        window = { margin = { vertical = 0, horizontal = 0 } }, -- Set the window margin
+        hide = {
+          cursorline = true, -- Hide the incline window when the cursorline is active
+        },
+        render = function(props)
+          local filename = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(props.buf), ":t") -- Get the filename
+          if vim.bo[props.buf].modified then
+            filename = "[+] " .. filename -- Indicate if the file is modified
+          end
+
+          local icon, color = require("nvim-web-devicons").get_icon_color(filename) -- Get the icon and color for the file
+          return { { icon, guifg = color }, { " " }, { filename } } -- Return the rendered content
+        end,
+      })
+    end,
+    enabled = false,
+  },
+
+  -- Plugin: mini.nvim
+  -- URL: https://github.com/echasnovski/mini.nvim
+  -- Description: A collection of minimal, fast, and modular Lua plugins for Neovim.
+  {
+    "echasnovski/mini.nvim",
+    version = false, -- Use the latest version
+    config = function()
+      require("mini.animate").setup({
+        resize = {
+          enable = false, -- Disable resize animations
+        },
+        open = {
+          enable = false, -- Disable open animations
+        },
+        close = {
+          enable = false, -- Disable close animations
+        },
+        scroll = {
+          enable = false, -- Disable scroll animations
+        },
+      })
+    end,
+  },
+
+  -- Plugin: zen-mode.nvim
+  -- URL: https://github.com/folke/zen-mode.nvim
+  -- Description: A Neovim plugin for distraction-free coding.
+  {
+    "folke/zen-mode.nvim",
+    cmd = "ZenMode", -- Command to toggle Zen Mode
+    opts = {
+      plugins = {
+        gitsigns = true, -- Enable gitsigns integration
+        tmux = true, -- Enable tmux integration
+        kitty = { enabled = false, font = "+2" }, -- Disable kitty integration and set font size
+        twilight = { enabled = true }, -- Enable twilight integration
+      },
+    },
+    keys = { { "<leader>z", "<cmd>ZenMode<cr>", desc = "Zen Mode" } }, -- Keybinding to toggle Zen Mode
+  },
+
+  -- Plugin: snacks.nvim
+  -- URL: https://github.com/folke/snacks.nvim/tree/main
+  -- Description: A Neovim plugin for creating a customizable dashboard.
+  {
+    "folke/snacks.nvim",
+    opts = {
+      dashboard = {
+        sections = {
+          { section = "header" },
+          {
+            pane = 1,
+            icon = " ",
+            desc = "Browse Repo",
+            padding = 1,
+            key = "b",
+            action = function()
+              Snacks.gitbrowse()
+            end,
+          },
+          function()
+            local in_git = Snacks.git.get_root() ~= nil
+            local cmds = {
+              {
+                pane = 1,
+                title = "Notifications",
+                cmd = "gh notify -s -ap -n5",
+                action = function()
+                  vim.ui.open("https://github.com/notifications")
+                end,
+                key = "t",
+                icon = " ",
+                height = 5,
+                enabled = true,
+              },
+              {
+                pane = 1,
+                title = "Open Issues",
+                cmd = "gh issue list -L 3 --assignee '@me'", ----json title --template '{{range .}}{{hyperlink l .title}}{{\"\n\"}}{{end}}'
+                key = "i",
+                action = function()
+                  vim.fn.jobstart("gh issue list --web", { detach = true })
+                end,
+                icon = " ",
+                height = 7,
+              },
+              {
+                pane = 1,
+                icon = " ",
+                title = "Open PRs",
+                cmd = "gh pr list -L 3",
+                key = "P",
+                action = function()
+                  vim.fn.jobstart("gh pr list --web", { detach = true })
+                end,
+                height = 7,
+              },
+            }
+            return vim.tbl_map(function(cmd)
+              return vim.tbl_extend("force", {
+                pane = 1,
+                section = "terminal",
+                enabled = in_git,
+                padding = 0,
+                ttl = 5 * 40,
+                indent = 1,
+              }, cmd)
+            end, cmds)
+          end,
+          {
+            pane = 2,
+            section = "terminal",
+            cmd = "colorscript -e square",
+            height = 5,
+            padding = 5,
+          },
+          { pane = 2, icon = " ", title = "Keymaps", section = "keys", indent = 2, padding = 2 },
+          { pane = 2, icon = " ", title = "Recent Files", section = "recent_files", indent = 2, padding = 2 },
+          { pane = 2, icon = " ", title = "Projects", section = "projects", indent = 2, padding = 2 },
+          { pane = 2, section = "startup" },
+        },
+        preset = {
+          header = [[
+          
+
+
+  ██  ███  ██████  ███   ██  ███   ██  ██    ██
+  █████    ██      ████  ██  ████  ██   ██  ██ 
+  ██       ██████  ██ ██ ██  ██ ██ ██    ████  
+  █████    ██      ██  ████  ██  ████     ██   
+  ██  ███  ██████  ██   ███  ██   ███     ██   
+  
+ ████████   ███      ███   ████████ 
+██      ██  ██   ██   ██  ██      ██
+██      ██  ██   ██   ██  ██      ██
+██      ██  ██  ████  ██  ██      ██
+ ████████    ████   ███    ████████ 
+]],
+        -- stylua: ignore
+        ---@type snacks.dashboard.Item[]
+        keys = {
+          { icon = " ", key = "f", desc = "Find File", action = ":lua Snacks.dashboard.pick('files')" },
+          { icon = " ", key = "n", desc = "New File", action = ":ene | startinsert" },
+          { icon = " ", key = "g", desc = "Find Text", action = ":lua Snacks.dashboard.pick('live_grep')" },
+          { icon = " ", key = "r", desc = "Recent Files", action = ":lua Snacks.dashboard.pick('oldfiles')" },
+          { icon = " ", key = "c", desc = "Config", action = ":lua Snacks.dashboard.pick('files', {cwd = vim.fn.stdpath('config')})" },
+          { icon = " ", key = "s", desc = "Restore Session", section = "session" },
+          { icon = " ", key = "x", desc = "Lazy Extras", action = ":LazyExtras" },
+          { icon = "󰒲 ", key = "l", desc = "Lazy", action = ":Lazy" },
+          { icon = " ", key = "q", desc = "Quit", action = ":qa" },
+        },
+        },
+      },
+    },
+  },
+}

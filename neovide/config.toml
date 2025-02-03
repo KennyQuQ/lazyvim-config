@@ -1,0 +1,14 @@
+backtraces_path = "./neovide_backtraces.log" # see below for the default platform specific location
+fork = false
+frame = "none"
+idle = true
+maximized = true
+mouse-cursor-icon = "arrow"
+neovim-bin = "/opt/homebrew/bin/nvim" # in reality found dynamically on $PATH if unset
+no-multigrid = true
+srgb = false
+tabs = true
+theme = "tokyonight"
+title-hidden = true
+vsync = true
+wsl = false
